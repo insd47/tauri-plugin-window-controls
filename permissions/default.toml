@@ -1,0 +1,8 @@
+[default]
+description = "Default permissions for the plugin: glyph path lookup, caption actions, and window state."
+permissions = [
+  "allow-get-glyph-path",
+  "allow-window-command",
+  "allow-window-state",
+  "allow-enable-snap",
+]
