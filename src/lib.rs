@@ -9,11 +9,12 @@ use tauri::{
     Runtime,
 };
 
-mod commands;
 mod error;
 mod ext;
 mod models;
 
+#[cfg(windows)]
+mod commands;
 #[cfg(windows)]
 mod windows;
 

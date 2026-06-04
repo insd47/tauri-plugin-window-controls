@@ -12,16 +12,16 @@ use crate::models::TitleBarColors;
 pub trait WindowControlsBuilderExt: Sized {
     /// Enables the overlay: removes the system frame, keeps the drop shadow,
     /// and injects the caption-control runtime. Default is disabled.
-    fn set_title_bar_overlay(self, enabled: bool) -> Self;
+    fn title_bar_overlay(self, enabled: bool) -> Self;
     /// Sets the title bar / caption button height in logical pixels (default 32).
-    fn set_title_bar_height(self, height: u32) -> Self;
+    fn title_bar_height(self, height: u32) -> Self;
     /// Overrides the caption colors per theme (rarely needed — sensible
     /// Windows-native defaults are built in).
-    fn set_title_bar_colors(self, light: TitleBarColors, dark: TitleBarColors) -> Self;
+    fn title_bar_colors(self, light: TitleBarColors, dark: TitleBarColors) -> Self;
 }
 
 impl<'a, R: Runtime, M: Manager<R>> WindowControlsBuilderExt for WebviewWindowBuilder<'a, R, M> {
-    fn set_title_bar_overlay(self, enabled: bool) -> Self {
+    fn title_bar_overlay(self, enabled: bool) -> Self {
         #[cfg(windows)]
         {
             if enabled {
@@ -39,7 +39,7 @@ impl<'a, R: Runtime, M: Manager<R>> WindowControlsBuilderExt for WebviewWindowBu
         }
     }
 
-    fn set_title_bar_height(self, height: u32) -> Self {
+    fn title_bar_height(self, height: u32) -> Self {
         #[cfg(windows)]
         {
             self.initialization_script(&crate::windows::overlay::height_script(height))
@@ -51,7 +51,7 @@ impl<'a, R: Runtime, M: Manager<R>> WindowControlsBuilderExt for WebviewWindowBu
         }
     }
 
-    fn set_title_bar_colors(self, light: TitleBarColors, dark: TitleBarColors) -> Self {
+    fn title_bar_colors(self, light: TitleBarColors, dark: TitleBarColors) -> Self {
         #[cfg(windows)]
         {
             self.initialization_script(&crate::windows::overlay::colors_script(&light, &dark))

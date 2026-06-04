@@ -1,39 +1,121 @@
 # Tauri Plugin Window Controls
 
-Native Windows caption controls for Tauri windows.
+![hero](.docs/hero.png)
+
+Native Windows 11 caption controls (minimize / maximize / close) for Tauri windows, with snap-layout support.
+
+The plugin removes the system frame (keeping the drop shadow) and injects a framework-agnostic runtime that draws
+pixel-perfect caption buttons. Maximize hover shows the Windows 11 snap-layout flyout via a native hit-test overlay. The
+glyphs are rendered from the system caption font through DirectWrite, so they match the OS exactly.
+
+**Windows-only by design.** On every other target the extension-trait methods are no-ops and `init()` registers an empty
+plugin — nothing from this crate ends up in non-Windows builds.
+
+## Install
+
+```toml
+# Cargo.toml
+[dependencies]
+tauri-plugin-window-controls = "0.1"
+```
+
+Depend on it unconditionally — no `[target.'cfg(windows)'.dependencies]` and no
+`#[cfg(windows)]` around `init()` are needed. On non-Windows targets the crate compiles to an empty plugin: the native
+code, caption commands, and injected JS runtime are all gated out, so nothing Windows-specific is bundled.
+
+Register the plugin at `lib.rs`:
+
+```rust
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        // ...
+        .plugin(tauri_plujgin_window_controls::init())
+        .setup(setup)
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(on_run_event);
+}
+```
+
+Add the default permission to your capability file (e.g. `capabilities/default.json`):
+
+```json
+{
+  "permissions": [
+    "window-controls:default"
+  ]
+}
+```
 
 ## Usage
 
-Register the plugin in Rust:
+Configure the overlay while building a window with `WindowControlsBuilderExt`:
 
 ```rust
-tauri::Builder::default()
-  .plugin(tauri_plugin_window_controls::init())
-  .run(tauri::generate_context!())?;
+use tauri::WebviewWindowBuilder;
+
+#[cfg(windows)]
+use tauri_plugin_window_controls::WindowControlsBuilderExt;
+
+pub fn create_main_window() {
+    let builder = WebviewWindowBuilder::new();
+
+    // ...
+
+    #[cfg(target_os = "macos")]
+    let win_builder = win_builder.traffic_light_position(LogicalPosition::new(15.0, 22.0));
+
+    #[cfg(target_os = "windows")]
+    let win_builder = win_builder.title_bar_overlay(true).title_bar_height(46);
+
+    // ...
+
+    win_builder.build()?;
+}
 ```
 
-Apply the titlebar from JavaScript after your UI is ready:
+Or configure an already-created window (e.g. one declared in `tauri.conf.json`)
+with `WindowControlsExt`:
 
-```ts
-import { getCurrentWindow } from '@tauri-apps/api/window'
-import { setTitleBarOverlay } from 'tauri-plugin-window-controls-api'
+```rust
+use tauri_plugin_window_controls::WindowControlsExt;
+use tauri::{WebviewWindow, command};
 
-await setTitleBarOverlay()
-await getCurrentWindow().show()
+#[command]
+pub fn set_title_bar_overlay(window: WebviewWindow) {
+    window.set_title_bar_height(40)?;
+    window.set_title_bar_overlay(true)?;
+}
 ```
 
-For best results, create the Tauri window with `visible: false`, then show it after `setTitleBarOverlay()` resolves.
-Native titlebar failures are logged by the plugin and are not thrown to JavaScript.
+The setters are order-independent — the injected runtime reads the configured height and colors when the DOM is ready.
 
-## Windows App SDK Bootstrap
+### Custom colors
 
-This plugin uses Windows App SDK's `AppWindowTitleBar.ExtendsContentIntoTitleBar` on Windows.
-For unpackaged apps, Microsoft requires the Windows App SDK bootstrapper DLL to initialize the package graph before Windows App SDK APIs are used.
+Override the caption colors per theme. Any omitted token falls back to the plugin's built-in Windows-native default.
 
-The plugin crate does not vendor Microsoft DLLs. During development or packaging, fetch the official bootstrap DLL from NuGet with:
+```rust
+use tauri_plugin_window_controls::{TitleBarColors, WindowControlsBuilderExt};
+use tauri::{WebviewWindow, command};
 
-```sh
-cargo run -p xtask -- fetch-windows-app-sdk
+#[command]
+fn set_title_bar_colors(window: WebviewWindow) {
+    let light = TitleBarColors {
+        symbol: Some("#1a1a1a".into()),
+        hover: Some("#0000000f".into()),
+        ..Default::default()
+    };
+
+    let dark = TitleBarColors {
+        symbol: Some("#ffffff".into()),
+        ..Default::default()
+    };
+
+    window.set_title_bar_colors(light, dark)?;
+}
 ```
 
-Then place the architecture-specific `Microsoft.WindowsAppRuntime.Bootstrap.dll` next to your app executable or provide its path via `WINDOWS_APP_RUNTIME_BOOTSTRAP_DLL`.
+## License
+
+[MIT](./LICENSE)
