@@ -2,14 +2,16 @@
 
 <img width="1102" height="810" alt="hero image" src="https://github.com/user-attachments/assets/c15681f2-3622-40e8-87ca-ea6f997d8951" />
 
-Native Windows 11 caption controls (minimize / maximize / close) for Tauri windows, with snap-layout support.
+Native Windows 11 caption controls (minimize/maximize/close) for Tauri windows, with snap-layout support.
 
-The plugin removes the system frame (keeping the drop shadow) and injects a framework-agnostic runtime that draws
-pixel-perfect caption buttons. Maximize hover shows the Windows 11 snap-layout flyout via a native hit-test overlay. The
-glyphs are rendered from the system caption font through DirectWrite, so they match the OS exactly.
+## Highlights
 
-**Windows-only by design.** On every other target the extension-trait methods are no-ops and `init()` registers an empty
-plugin — nothing from this crate ends up in non-Windows builds.
+- **Native Snap Layouts**: the Maximize button is backed by a real `HTMAXBUTTON` hit-test overlay, so the Windows 11
+  snap-layout flyout appears on hover exactly the way it does for any other native application.
+- **No bundled glyph assets**: caption icons are rendered straight from the system's built-in caption font (Segoe
+  Fluent Icons / Segoe MDL2 Assets) through DirectWrite, keeping the implementation clean and the footprint tiny.
+- **Zero footprint off Windows**: every platform-specific path is `cfg`-gated, so on non-Windows targets the native
+  code, caption commands, and injected JS runtime are all compiled out and nothing ships in the bundle.
 
 ## Install
 
