@@ -140,13 +140,26 @@
     void setGlyph(btns.max._glyph, s.maximized ? GLYPH.restore : GLYPH.max);
   }
 
+  // Events are scoped to THIS webview. A bare "Any" target receives every
+  // window's events (and the Rust side now emits per-window via emit_to), so we
+  // must filter to our own label — otherwise one window's maximize hover would
+  // light up every window's button. Falls back to "Any" only if the label is
+  // somehow unavailable.
+  function selfTarget() {
+    const meta = TAURI.metadata || {};
+    const label =
+      (meta.currentWebview && meta.currentWebview.label) ||
+      (meta.currentWindow && meta.currentWindow.label);
+    return label ? { kind: "WebviewWindow", label: label } : { kind: "Any" };
+  }
+
   function listen(event, handler) {
     try {
       const cb = TAURI.transformCallback(function (e) {
         handler(e);
       });
 
-      TAURI.invoke("plugin:event|listen", { event: event, target: { kind: "Any" }, handler: cb }).catch(
+      TAURI.invoke("plugin:event|listen", { event: event, target: selfTarget(), handler: cb }).catch(
         function () {}
       );
 
@@ -177,10 +190,23 @@
     void setGlyph(btns.min._glyph, GLYPH.min);
     void setGlyph(btns.close._glyph, GLYPH.close);
 
+    // The native snap overlay is only installed once the window is actually
+    // maximizable. A non-maximizable window must not get the hit-test child
+    // (it would otherwise show the snap flyout and hover over a dead button).
+    let snapInstalled = false;
+    function ensureSnap(maximizable) {
+      if (!maximizable || snapInstalled) return;
+      snapInstalled = true;
+      invoke("enable_snap", { height: height }).catch(function () {
+        snapInstalled = false;
+      });
+    }
+
     function refresh() {
       invoke("window_state")
         .then(function (s) {
           applyState(bar, btns, s);
+          ensureSnap(s.maximizable);
         })
         .catch(function () {});
     }
@@ -197,21 +223,26 @@
 
     // Native snap-layout overlay over the Maximize button. It returns
     // HTMAXBUTTON (so Windows shows the snap flyout) and bridges hover/press/
-    // click back as events, because it covers the DOM button.
-    invoke("enable_snap", { height: height }).catch(function () {});
+    // click back as events, because it covers the DOM button. Installed lazily
+    // by ensureSnap() once the window is confirmed maximizable. The disabled
+    // guards below keep a stale overlay (window turned non-maximizable after
+    // install) from lighting up or actioning a dead button.
     listen("window-controls://snap-enter", function () {
+      if (btns.max.disabled) return;
       btns.max.classList.add("tbo-hover");
     });
     listen("window-controls://snap-leave", function () {
       btns.max.classList.remove("tbo-hover", "tbo-active");
     });
     listen("window-controls://snap-down", function () {
+      if (btns.max.disabled) return;
       btns.max.classList.add("tbo-active");
     });
     listen("window-controls://snap-up", function () {
       btns.max.classList.remove("tbo-active");
     });
     listen("window-controls://snap-click", function () {
+      if (btns.max.disabled) return;
       invoke("window_command", { action: "toggle-maximize" });
     });
   }

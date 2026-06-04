@@ -13,7 +13,7 @@
 
 use std::{collections::HashMap, sync::Mutex};
 
-use tauri::{Emitter, Runtime, WebviewWindow};
+use tauri::{Emitter, EventTarget, Runtime, WebviewWindow};
 use windows_sys::Win32::{
     Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
     Graphics::Gdi::{GetStockObject, HBRUSH, NULL_BRUSH},
@@ -70,13 +70,17 @@ fn with_states<T>(f: impl FnOnce(&mut HashMap<isize, SnapState>) -> T) -> T {
 pub(crate) fn install<R: Runtime>(window: &WebviewWindow<R>, titlebar_height: u32) -> tauri::Result<()> {
     let hwnd = window.hwnd()?.0 as isize;
     let emitter = window.clone();
+    let label = window.label().to_string();
 
     window.run_on_main_thread(move || unsafe {
         install_hwnd(
             hwnd,
             titlebar_height,
             Box::new(move |event| {
-                let _ = emitter.emit(event, ());
+                // Scope to this window's webview only. A bare `emit` broadcasts
+                // app-wide, so every window's caption runtime would react to one
+                // window's hover/press — `emit_to` keeps it to the source window.
+                let _ = emitter.emit_to(EventTarget::webview_window(label.clone()), event, ());
             }),
         );
     })?;
