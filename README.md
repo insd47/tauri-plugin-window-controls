@@ -1,6 +1,6 @@
 # Window Controls Overlay Plugin for Tauri
 
-![hero](.docs/hero.png)
+<img width="1102" height="810" alt="image" src="https://github.com/user-attachments/assets/c15681f2-3622-40e8-87ca-ea6f997d8951" />
 
 Native Windows 11 caption controls (minimize / maximize / close) for Tauri windows, with snap-layout support.
 
