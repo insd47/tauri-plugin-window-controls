@@ -30,7 +30,7 @@ Register the plugin at `lib.rs`:
 pub fn run() {
     tauri::Builder::default()
         // ...
-        .plugin(tauri_plujgin_window_controls::init())
+        .plugin(tauri_plugin_window_controls::init())
         .setup(setup)
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

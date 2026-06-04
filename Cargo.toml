@@ -9,6 +9,8 @@ license = "MIT"
 readme = "README.md"
 keywords = ["tauri", "windows", "titlebar", "caption", "snap"]
 categories = ["gui", "os::windows-apis", "api-bindings"]
+repository = "https://github.com/insd47/tauri-plugin-window-controls"
+homepage = "https://github.com/insd47/tauri-plugin-window-controls"
 links = "tauri-plugin-window-controls"
 
 [dependencies]
