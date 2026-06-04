@@ -1,3 +1,5 @@
+// noinspection JSUnresolvedReference
+
 // Auto-injected caption-control runtime (vanilla, framework-agnostic).
 // Builds the top-right minimize/maximize/close buttons, fetches pixel-perfect
 //
@@ -9,10 +11,6 @@
 
   // noinspection JSUnresolvedReference
   const TAURI = window.__TAURI_INTERNALS__;
-  // noinspection JSUnresolvedReference
-  const HEIGHT = window.__TBO_HEIGHT__ || 32;
-  // noinspection JSUnresolvedReference
-  const COLORS = window.__TBO_COLORS__ || {};
 
   if (!TAURI || document.getElementById("tbo-controls")) return;
 
@@ -57,7 +55,7 @@
       "#tbo-controls .tbo-close:hover{background:" + CLOSE_HOVER + ";color:#fff;}" +
       "#tbo-controls .tbo-close:active{background:" + CLOSE_PRESSED + ";color:#fff;transition:none;}" +
       // maximize hover/press come from the snap overlay (events -> classes), since
-      // the native overlay sits over the button and swallows DOM :hover/:active.
+      // the native overlay sits over the button and swallows DOM: hover/:active.
       "#tbo-controls .tbo-btn.tbo-hover{background:var(--tbo-hover);}" +
       "#tbo-controls .tbo-btn.tbo-active{background:var(--tbo-pressed);transition:none;}" +
       "#tbo-controls .tbo-btn[disabled]{pointer-events:none;}" +
@@ -139,7 +137,7 @@
     btns.close.disabled = !s.closable;
     btns.max.setAttribute("aria-label", s.maximized ? "Restore" : "Maximize");
 
-    setGlyph(btns.max._glyph, s.maximized ? GLYPH.restore : GLYPH.max);
+    void setGlyph(btns.max._glyph, s.maximized ? GLYPH.restore : GLYPH.max);
   }
 
   function listen(event, handler) {
@@ -156,7 +154,10 @@
   }
 
   function start() {
-    injectStyle(HEIGHT, merge(DEFAULTS.light, COLORS.light), merge(DEFAULTS.dark, COLORS.dark));
+    const height = window.__TBO_HEIGHT__ || 32;
+    const colors = window.__TBO_COLORS__ || {};
+
+    injectStyle(height, merge(DEFAULTS.light, colors.light), merge(DEFAULTS.dark, colors.dark));
 
     const bar = document.createElement("div");
     bar.id = "tbo-controls";
@@ -173,8 +174,8 @@
     bar.appendChild(btns.close);
     document.body.appendChild(bar);
 
-    setGlyph(btns.min._glyph, GLYPH.min);
-    setGlyph(btns.close._glyph, GLYPH.close);
+    void setGlyph(btns.min._glyph, GLYPH.min);
+    void setGlyph(btns.close._glyph, GLYPH.close);
 
     function refresh() {
       invoke("window_state")
@@ -194,10 +195,10 @@
       bar.setAttribute("data-active", "false");
     });
 
-    // Native snap-layout overlay over the maximize button. It returns
+    // Native snap-layout overlay over the Maximize button. It returns
     // HTMAXBUTTON (so Windows shows the snap flyout) and bridges hover/press/
     // click back as events, because it covers the DOM button.
-    invoke("enable_snap", { height: HEIGHT }).catch(function () {});
+    invoke("enable_snap", { height: height }).catch(function () {});
     listen("window-controls://snap-enter", function () {
       btns.max.classList.add("tbo-hover");
     });
