@@ -1,4 +1,4 @@
-# Tauri Plugin Window Controls
+# Window Controls Overlay Plugin for Tauri
 
 ![hero](.docs/hero.png)
 
