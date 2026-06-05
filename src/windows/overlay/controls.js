@@ -51,9 +51,9 @@
         "border:0;margin:0;padding:0;background:var(--tbo-default);color:var(--tbo-symbol);" +
         "cursor:default;transition:background-color .15s,color .1s;}" +
       "#tbo-controls .tbo-btn:hover{background:var(--tbo-hover);}" +
-      "#tbo-controls .tbo-btn:active{background:var(--tbo-pressed);transition:none;}" +
+      "#tbo-controls .tbo-btn:hover:active{background:var(--tbo-pressed);transition:none;}" +
       "#tbo-controls .tbo-close:hover{background:" + CLOSE_HOVER + ";color:#fff;}" +
-      "#tbo-controls .tbo-close:active{background:" + CLOSE_PRESSED + ";color:#fff;transition:none;}" +
+      "#tbo-controls .tbo-close:hover:active{background:" + CLOSE_PRESSED + ";color:#fff;transition:none;}" +
       // maximize hover/press come from the snap overlay (events -> classes), since
       // the native overlay sits over the button and swallows DOM: hover/:active.
       "#tbo-controls .tbo-btn.tbo-hover{background:var(--tbo-hover);}" +
