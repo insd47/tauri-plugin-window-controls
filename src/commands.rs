@@ -1,26 +1,24 @@
 //! Plugin commands. All are Windows-only — on other targets none are defined
 //! and `init` registers no handlers, so the plugin leaves no trace.
 
-#[cfg(windows)]
+use crate::Result;
 use serde::Serialize;
-#[cfg(windows)]
 use tauri::{command, Runtime, WebviewWindow};
+use tauri_plugin_system_symbols::Path;
 
-/// Returns SVG path data for a single glyph character (Segoe Fluent Icons,
-/// falling back to Segoe MDL2 Assets). The frontend wraps it in `<svg>`.
-#[cfg(windows)]
+/// Returns SVG paths for a single platform symbol. The frontend wraps them in
+/// `<svg>` and preserves per-path fill rules / opacity.
 #[command]
-pub(crate) async fn get_glyph_path(text: String) -> crate::Result<String> {
-    crate::windows::glyph_path(&text)
+pub(crate) async fn get_glyph_path(text: String) -> Result<Vec<Path>> {
+    Ok(tauri_plugin_system_symbols::get_symbol(text, 10.0)?)
 }
 
 /// Performs a caption action on the invoking window.
-#[cfg(windows)]
 #[command]
 pub(crate) async fn window_command<R: Runtime>(
     window: WebviewWindow<R>,
     action: String,
-) -> crate::Result<()> {
+) -> Result<()> {
     match action.as_str() {
         "minimize" => window.minimize()?,
         "toggle-maximize" => {
@@ -38,7 +36,6 @@ pub(crate) async fn window_command<R: Runtime>(
 
 /// Current caption-relevant window state, used by the injected runtime to
 /// render the right glyph / enabled / active styling.
-#[cfg(windows)]
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct WindowState {
@@ -51,21 +48,14 @@ pub(crate) struct WindowState {
 
 /// Installs the Windows 11 snap-layout overlay over the maximize button.
 /// Called by the injected runtime once the caption bar is built.
-#[cfg(windows)]
 #[command]
-pub(crate) async fn enable_snap<R: Runtime>(
-    window: WebviewWindow<R>,
-    height: u32,
-) -> crate::Result<()> {
+pub(crate) async fn enable_snap<R: Runtime>(window: WebviewWindow<R>, height: u32) -> Result<()> {
     crate::windows::overlay::snap::install(&window, height)?;
     Ok(())
 }
 
-#[cfg(windows)]
 #[command]
-pub(crate) async fn window_state<R: Runtime>(
-    window: WebviewWindow<R>,
-) -> crate::Result<WindowState> {
+pub(crate) async fn window_state<R: Runtime>(window: WebviewWindow<R>) -> Result<WindowState> {
     Ok(WindowState {
         maximized: window.is_maximized()?,
         focused: window.is_focused()?,

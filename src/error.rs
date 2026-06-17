@@ -6,8 +6,9 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
-    #[error("{0}")]
-    Glyph(String),
+    #[cfg(windows)]
+    #[error(transparent)]
+    Symbols(#[from] tauri_plugin_system_symbols::Error),
 }
 
 impl Serialize for Error {

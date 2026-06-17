@@ -4,7 +4,7 @@
 //! Maximize button and returns `HTMAXBUTTON` from `WM_NCHITTEST`, which is the
 //! OS-supported way to make the snap-layout flyout appear on hover. Because the
 //! overlay sits on top of the DOM button, it can't see DOM hover/click, so it
-//! bridges those back to the webview as events. The frontend 
+//! bridges those back to the webview as events. The frontend
 //! performs the maximize action itself (via `window_command`) on the `click` event.
 //!
 //! Position is derived natively from the fixed caption geometry (46px buttons,
@@ -67,7 +67,10 @@ fn with_states<T>(f: impl FnOnce(&mut HashMap<isize, SnapState>) -> T) -> T {
 }
 
 /// Installs (or reinstalls) the snap overlay on `window`'s maximize button.
-pub(crate) fn install<R: Runtime>(window: &WebviewWindow<R>, titlebar_height: u32) -> tauri::Result<()> {
+pub(crate) fn install<R: Runtime>(
+    window: &WebviewWindow<R>,
+    titlebar_height: u32,
+) -> tauri::Result<()> {
     let hwnd = window.hwnd()?.0 as isize;
     let emitter = window.clone();
     let label = window.label().to_string();

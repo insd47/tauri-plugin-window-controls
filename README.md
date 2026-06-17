@@ -8,9 +8,8 @@ Native Windows 11 caption controls (minimize/maximize/close) for Tauri windows, 
 
 - **Native Snap Layouts**: the Maximize button is backed by a real `HTMAXBUTTON` hit-test overlay, so the Windows 11
   snap-layout flyout appears on hover exactly the way it does for any other native application.
-- **OS-accurate icons, no bundled assets**: caption glyphs are pulled from the live system caption font (Segoe Fluent
-  Icons, with Segoe MDL2 Assets fallback) through DirectWrite, so they always match the user's exact Windows version
-  instead of drifting from a hardcoded copy — with no font or SVG files shipped.
+- **OS-accurate icons, no bundled assets**: caption glyphs are resolved through `tauri-plugin-system-symbols`, so they
+  use the live system symbol source instead of drifting from a hardcoded copy, with no font or SVG files shipped.
 - **Zero footprint off Windows**: every platform-specific path is `cfg`-gated, so on non-Windows targets the native
   code, caption commands, and injected JS runtime are all compiled out and nothing ships in the bundle.
 
@@ -20,6 +19,7 @@ Native Windows 11 caption controls (minimize/maximize/close) for Tauri windows, 
 # Cargo.toml
 [dependencies]
 tauri-plugin-window-controls = "0.1"
+tauri-plugin-system-symbols = "0.2"
 ```
 
 Depend on it unconditionally — no `[target.'cfg(windows)'.dependencies]` and no
@@ -33,6 +33,7 @@ Register the plugin at `lib.rs`:
 pub fn run() {
     tauri::Builder::default()
         // ...
+        .plugin(tauri_plugin_system_symbols::init())
         .plugin(tauri_plugin_window_controls::init())
         .setup(setup)
         .build(tauri::generate_context!())

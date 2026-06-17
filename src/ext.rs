@@ -72,7 +72,11 @@ impl<'a, R: Runtime, M: Manager<R>> WindowControlsBuilderExt for WebviewWindowBu
 pub trait WindowControlsExt {
     fn set_title_bar_overlay(&self, enabled: bool) -> tauri::Result<()>;
     fn set_title_bar_height(&self, height: u32) -> tauri::Result<()>;
-    fn set_title_bar_colors(&self, light: TitleBarColors, dark: TitleBarColors) -> tauri::Result<()>;
+    fn set_title_bar_colors(
+        &self,
+        light: TitleBarColors,
+        dark: TitleBarColors,
+    ) -> tauri::Result<()>;
 }
 
 impl<R: Runtime> WindowControlsExt for WebviewWindow<R> {
@@ -105,7 +109,11 @@ impl<R: Runtime> WindowControlsExt for WebviewWindow<R> {
         }
     }
 
-    fn set_title_bar_colors(&self, light: TitleBarColors, dark: TitleBarColors) -> tauri::Result<()> {
+    fn set_title_bar_colors(
+        &self,
+        light: TitleBarColors,
+        dark: TitleBarColors,
+    ) -> tauri::Result<()> {
         #[cfg(windows)]
         {
             self.eval(&crate::windows::overlay::colors_script(&light, &dark))

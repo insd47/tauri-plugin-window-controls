@@ -71,36 +71,42 @@
     document.head.appendChild(style);
   }
 
-  // Backend normalizes every glyph into this viewBox; fonts are nonzero-winding
-  // (SVG default), so no fill-rule is needed. Paths are fetched once and reused.
+  // Backend returns every caption glyph at 10x10. Paths are fetched once and reused.
   const SVGNS = "http://www.w3.org/2000/svg";
-  const VIEW_BOX = "0 0 100 100";
+  const VIEW_BOX = "0 0 10 10";
   const PATHS = {};
 
-  function glyphPath(ch) {
+  function glyphPaths(ch) {
     if (ch in PATHS) return Promise.resolve(PATHS[ch]);
     return invoke("get_glyph_path", { text: ch })
-      .then(function (d) {
-        PATHS[ch] = d || "";
+      .then(function (paths) {
+        PATHS[ch] = Array.isArray(paths) ? paths : [];
         return PATHS[ch];
       })
       .catch(function () {
-        return "";
+        return [];
       });
   }
 
   async function setGlyph(span, ch) {
-    const d = await glyphPath(ch);
-    if (!d) return;
+    const paths = await glyphPaths(ch);
+    if (!paths.length) return;
 
     const svg = document.createElementNS(SVGNS, "svg");
     svg.setAttribute("viewBox", VIEW_BOX);
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
-    const path = document.createElementNS(SVGNS, "path");
-    path.setAttribute("d", d);
-    path.setAttribute("fill", "currentColor");
-    svg.appendChild(path);
+    paths.forEach(function (p) {
+      if (!p || !p.d) return;
+      const path = document.createElementNS(SVGNS, "path");
+      path.setAttribute("d", p.d);
+      path.setAttribute("fill", "currentColor");
+      if (p.fillRule) path.setAttribute("fill-rule", p.fillRule);
+      if (p.opacity != null) path.setAttribute("opacity", p.opacity);
+      svg.appendChild(path);
+    });
+
+    if (!svg.childNodes.length) return;
 
     span.textContent = "";
     span.appendChild(svg);
