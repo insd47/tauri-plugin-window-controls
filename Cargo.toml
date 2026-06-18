@@ -20,7 +20,7 @@ serde_json = "1"
 thiserror = "2"
 
 [target.'cfg(windows)'.dependencies]
-tauri-plugin-system-symbols = "0.2"
+tauri-plugin-system-symbols = "0.3"
 windows-sys = { version = "0.61.2", features = [
     "Win32_Foundation",
     "Win32_Graphics_Gdi",
